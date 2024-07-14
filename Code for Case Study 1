@@ -1,0 +1,62 @@
+pip install openai
+import os
+import openai
+
+# Set your OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+import openai
+
+def generate_response(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=150,
+        n=1,
+        stop=None,
+        temperature=0.7,
+    )
+    return response.choices[0].text.strip()
+
+def handle_customer_query(query):
+    prompt = f"Customer query: {query}\nAI response:"
+    response = generate_response(prompt)
+    return response
+def generate_personalized_message(customer_name, interaction_history):
+    prompt = f"Generate a personalized engagement message for a customer named {customer_name}. They have previously interacted with support about {interaction_history}."
+    response = generate_response(prompt)
+    return response
+def main():
+    # Example customer query
+    customer_query = "How can I reset my password?"
+    response = handle_customer_query(customer_query)
+    print(f"Automated Response: {response}")
+
+    # Example personalized engagement
+    customer_name = "Alice"
+    interaction_history = "issues with logging in and password resets"
+    personalized_message = generate_personalized_message(customer_name, interaction_history)
+    print(f"Personalized Message: {personalized_message}")
+
+if __name__ == "__main__":
+    main()
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/handle_query", methods=["POST"])
+def handle_query():
+    data = request.get_json()
+    customer_query = data.get("query")
+    response = handle_customer_query(customer_query)
+    return jsonify({"response": response})
+
+@app.route("/personalize_message", methods=["POST"])
+def personalize_message():
+    data = request.get_json()
+    customer_name = data.get("customer_name")
+    interaction_history = data.get("interaction_history")
+    message = generate_personalized_message(customer_name, interaction_history)
+    return jsonify({"message": message})
+
+if __name__ == "__main__":
+    app.run(debug=True)
